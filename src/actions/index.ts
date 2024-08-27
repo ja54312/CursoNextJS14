@@ -1,11 +1,21 @@
 "use server"
 import { GraphQLClientSingleton } from "../graphql"
+import { createCartMutation } from "../graphql/mutations/createCartMutation"
 import { createUserMutation } from "../graphql/mutations/createUserMutation"
 import { createAccessToken } from "../utils/auth/createAccessToken"
-import { createCartMutation } from "../graphql/mutations/createCartMutation"
 import { validateAccessToken } from "../utils/auth/validateAccessToken"
-import { redirect } from "next/navigation"
 import { cookies } from "next/headers"
+import { redirect } from "next/navigation"
+
+// Define el tipo de la respuesta esperada
+interface CustomerCreateResponse {
+    customerCreate: {
+        customerUserErrors: any[],
+        customer: {
+            firstName: string
+        }
+    }
+}
 
 export const handleCreateUser = async (formData: FormData) => {
     const formDataObject = Object.fromEntries(formData)
@@ -18,7 +28,8 @@ export const handleCreateUser = async (formData: FormData) => {
         }
     }
 
-    const { customerCreate } = await graphqlClient.request(createUserMutation, variables)
+    const response: CustomerCreateResponse = await graphqlClient.request(createUserMutation, variables)
+    const { customerCreate } = response
     const { customerUserErrors, customer } = customerCreate
     if (customer?.firstName) {
         await createAccessToken(formDataObject.email as string, formDataObject.password as string)

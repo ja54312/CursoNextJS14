@@ -22,11 +22,14 @@ export const getProducts = async (id?: string): Promise<ProductType[]> => {
                 quantity: product.variants[0].inventory_quantity,
                 handle: product.handle,
                 tags: product.tags,
-            }
+            } as ProductType
         })
+
         return transformedProducts
+
     } catch (error) {
         console.log(error)
+        return []
     }
 }
 
